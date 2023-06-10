@@ -78,8 +78,13 @@ WSGI_APPLICATION = 'rtvst.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'rtvst',
+        'HOST': 'localhost',
+        'USER': 'root',
+        'PASSWORD': 'donald08'
+
+
     }
 }
 
