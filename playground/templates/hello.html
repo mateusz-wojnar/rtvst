@@ -1,5 +1,20 @@
-{% if name%}
-<h1>Hello {{name}}</h1>
-{% else %}
-<h1>Hello world</h1>
-{% endif %}
+
+<html> 
+</head>
+    <body>
+        {% if name%}
+        <h1>Hello {{name}}</h1>
+        {% else %}
+        <h1>Hello world</h1>
+        {% endif %}
+
+        {{result}}
+        <ul>
+           {% for osoba in osoby %}
+           <li>{{ osoba.imie_nazwisko}}</li>
+           {% endfor %}
+        </ul>
+    </body>
+</head>
+</html>
+
