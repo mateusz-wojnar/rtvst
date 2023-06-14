@@ -1,1 +1,1 @@
-# RTV strore web app WIP
+# RTV store web app WIP
