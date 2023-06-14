@@ -57,9 +57,12 @@ class ProduktAdmin(admin.ModelAdmin):
 
 @admin.register(models.Klient)
 class KlientAdmin(admin.ModelAdmin):
-    list_display=['imie','nazwisko','email','ilosc_zamowien']
+    list_display=['first_name','last_name','email','ilosc_zamowien']
     list_per_page=15
-    search_fields=['imie__istartswith','nazwisko__istartswith']
+    list_select_related = ['user']
+    ordering = ['user__first_name','user__last_name']
+    search_fields=['first_name__istartswith','last_name__istartswith']
+    
 
     @admin.display(ordering='ilosc_zamowien')
     def ilosc_zamowien(self, klient):
@@ -109,5 +112,5 @@ class KategoriaAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            ilosc_produktow=Count('produkt')
+            ilosc_produktow=Count('produkty')
         )

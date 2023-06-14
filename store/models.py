@@ -1,5 +1,8 @@
+from django.contrib import admin
 from django.core.validators import MinValueValidator
+from django.conf import settings
 from django.db import models
+from uuid import uuid4
 
 # Create your models here.
 
@@ -29,7 +32,7 @@ class Produkt(models.Model):
         validators=[MinValueValidator(0,message="Minimalny stan magazynowy to 0")]
     )
     ostatnia_aktualizacja = models.DateTimeField(auto_now=True)
-    kategoria = models.ForeignKey(Kategoria, on_delete=models.PROTECT)
+    kategoria = models.ForeignKey(Kategoria, on_delete=models.PROTECT,related_name='produkty')
     promocje = models.ManyToManyField(Promocja, blank=True)
 
     def __str__(self) -> str:
@@ -42,25 +45,46 @@ class Produkt(models.Model):
 
 
 class Koszyk(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
     data_stworzenia = models.DateTimeField(auto_now_add=True)
+    
+
+class KoszykSzczegoly(models.Model):
+    koszyk = models.ForeignKey(Koszyk, on_delete=models.CASCADE, related_name='produkty')
+    produkt = models.ForeignKey(Produkt, on_delete=models.CASCADE)
+    ilosc = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1,message='Minimalna ilość to 1')]
+    )
+
+    class Meta:
+        unique_together = [['koszyk','produkt']]
 
 class Klient(models.Model):
-    imie = models.CharField(max_length=255)
-    nazwisko = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
-    nr_telefonu = models.CharField(max_length=255)
-    data_urodzenia = models.DateField()
+    nr_telefonu = models.CharField(max_length=255,null=True, blank=True)
+    data_urodzenia = models.DateField(null=True, blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f'{self.imie} {self.nazwisko}'
+        return f'{self.user.first_name} {self.user.last_name}'
+    
+    @admin.display(ordering='user__first_name')
+    def first_name(self):
+        return self.user.first_name
+    
+    @admin.display(ordering='user__last_name')
+    def last_name(self):
+        return self.user.last_name
+    
+    def email(self):
+        return self.user.email
 
     class Meta:
         db_table = 'store_klient'
-        indexes = [
-            models.Index(fields=['imie','nazwisko'])
-        ]
-        ordering=['imie','nazwisko']
+        ordering=['user__first_name','user__last_name']
         verbose_name_plural = 'Klienci'
+        permissions = [
+            ('zobacz_historie','Może zobaczyć historię')
+        ]
 
 class AdresKlienta(models.Model):
     miasto = models.CharField(max_length=255)
@@ -87,17 +111,22 @@ class Zamowienie(models.Model):
     class Meta:
         ordering=['-id']
         verbose_name_plural = 'Zamówienia'
+        permissions = [
+            ('anuluj zamowienie', 'Może anulować zamówienia')
+        ]
 
 class ZamowienieSzczegoly(models.Model):
     zamowienie = models.ForeignKey(Zamowienie, on_delete=models.PROTECT)
-    produkt = models.ForeignKey(Produkt, on_delete=models.PROTECT)
+    produkt = models.ForeignKey(Produkt, on_delete=models.PROTECT, related_name='zamowioneprodukty')
     ilosc = models.PositiveSmallIntegerField()
     cena_jednostkowa = models.DecimalField(max_digits=8,decimal_places=2)
 
     class Meta:
         verbose_name_plural = 'Produkty szczegółowe'
 
-class KoszykSzczegoly(models.Model):
-    koszyk = models.ForeignKey(Koszyk, on_delete=models.CASCADE)
-    produkt = models.ForeignKey(Produkt, on_delete=models.CASCADE)
-    ilosc = models.PositiveSmallIntegerField()
+
+class Opinia(models.Model):
+    produkt = models.ForeignKey(Produkt, on_delete=models.CASCADE, related_name='opinie')
+    nazwa = models.CharField(max_length=255)
+    opis = models.TextField()
+    data = models.DateField(auto_now_add=True)

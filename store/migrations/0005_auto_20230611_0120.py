@@ -9,12 +9,4 @@ class Migration(migrations.Migration):
         ('store', '0004_klient_kod_pocztowy_and_more'),
     ]
 
-    operations = [
-        migrations.RunSQL("""
-            INSERT INTO store_kategoria (nazwa)
-            VALUES ('kategoria1')
-        ""","""
-            DELETE FROM store_kategoria
-            WHERE nazwa='kategoria1'
-        """)
-    ]
+

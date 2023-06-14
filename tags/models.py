@@ -16,6 +16,10 @@ class ProduktTagManager(models.Model):
 class Tag(models.Model):
     nazwa = models.CharField(max_length=255)
 
+    class Meta:
+        ordering=['nazwa']
+        verbose_name_plural = 'Tagi'
+
     def __str__(self) -> str:
         return self.nazwa
 
